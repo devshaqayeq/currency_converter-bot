@@ -1,10 +1,6 @@
-import requests
+import telebot
+from decouple import config
 
-from_currency = str(input("enter the currency you'd like to convert from:")).upper()
-to_currency = str(input("enter the currency you'd like to convert to:")).upper()
+BOT_TOKEN = config('BOT_TOKEN')
 
-amount = float(input("enter the amount of money:"))
-
-response = requests.get(f"https://api.frankfurter.app/latest?amount={amount}?from={from_currency}?to={to_currency}")
-
-print(f"{amount} {from_currency} is {response.json()['rates'][to_currency]} {to_currency}")
+bot = telebot.TeleBot(BOT_TOKEN)

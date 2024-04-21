@@ -6,10 +6,29 @@ BOT_TOKEN = config('BOT_TOKEN')
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
+ABOUT_TEXT = """This bot is example bot to convert currencies to each other.
+What you want to do?"""
+
 
 @bot.message_handler(commands=['start', 'hello'])
 def send_welcome(message):
     bot.reply_to(message, "Hello!, Wellcome")
+
+
+def get_valid_currency_codes():
+    try:
+        response = requests.get("https://openexchangerates.org/api/currencies.json")
+        if response.status_code == 200:
+            return response.json().keys()
+        else:
+            return []
+    except requests.exceptions.RequestException:
+        return []
+
+
+def is_valid_currency(currency_code):
+    valid_currency_codes = get_valid_currency_codes()
+    return currency_code in valid_currency_codes
 
 
 def get_currency_rate(from_currency: str, to_currency: str, amount: float):
@@ -29,6 +48,13 @@ def from_currency_handler(message):
 
 def to_currency_handler(message):
     from_currency = message.text.upper()
+
+    if not is_valid_currency(from_currency):
+        text = "Invalid currency code. Please enter a valid currency code."
+        sent_msg = bot.send_message(message.chat.id, text)
+        bot.register_next_step_handler(sent_msg, to_currency_handler)
+        return
+
     text = "which currency you want to convert to ?"
     sent_msg = bot.send_message(message.chat.id, text)
     bot.register_next_step_handler(sent_msg, amount_handler, from_currency)
@@ -36,6 +62,13 @@ def to_currency_handler(message):
 
 def amount_handler(message, from_currency):
     to_currency = message.text.upper()
+
+    if not is_valid_currency(to_currency):
+        text = "Invalid currency code. Please enter a valid currency code."
+        sent_msg = bot.send_message(message.chat.id, text)
+        bot.register_next_step_handler(sent_msg, amount_handler, from_currency)
+        return
+
     text = "Enter the amount you want to convert:"
     sent_msg = bot.send_message(message.chat.id, text)
     bot.register_next_step_handler(sent_msg, perform_conversion, from_currency, to_currency)

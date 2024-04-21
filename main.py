@@ -12,7 +12,11 @@ What do you want to do?"""
 
 @bot.message_handler(commands=['start', 'hello'])
 def send_welcome(message):
-    bot.reply_to(message, "Hello!, Wellcome")
+    text = """
+    Hello!, Wellcome
+    to start the currency converting process please enter /currency
+    """
+    bot.reply_to(message, text)
 
 
 def get_valid_currency_codes():
@@ -65,6 +69,12 @@ def amount_handler(message, from_currency):
 
     if not is_valid_currency(to_currency):
         text = "Invalid currency code. Please enter a valid currency code."
+        sent_msg = bot.send_message(message.chat.id, text)
+        bot.register_next_step_handler(sent_msg, amount_handler, from_currency)
+        return
+
+    if from_currency == to_currency:
+        text = "The 'from' currency cannot be the same as the 'to' currency. Please choose a different currency."
         sent_msg = bot.send_message(message.chat.id, text)
         bot.register_next_step_handler(sent_msg, amount_handler, from_currency)
         return

@@ -7,7 +7,7 @@ BOT_TOKEN = config('BOT_TOKEN')
 bot = telebot.TeleBot(BOT_TOKEN)
 
 ABOUT_TEXT = """This bot is example bot to convert currencies to each other.
-What you want to do?"""
+What do you want to do?"""
 
 
 @bot.message_handler(commands=['start', 'hello'])
@@ -83,6 +83,17 @@ def perform_conversion(message, from_currency, to_currency):
         bot.send_message(message.chat.id, response_message)
     except ValueError:
         bot.send_message(message.chat.id, "Invalid amount. Please enter a valid number.")
+
+
+@bot.message_handler(commands=['about'])
+def about_handler(message):
+    bot.send_message(message.chat.id, ABOUT_TEXT)
+
+
+@bot.message_handler(func=lambda message: True)
+def default_handler(message):
+    text = "Sorry, I didn't understand that. Please use /currency or /about."
+    bot.send_message(message.chat.id, text)
 
 
 bot.infinity_polling()
